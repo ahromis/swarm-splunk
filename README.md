@@ -1,6 +1,6 @@
 # swarm-splunk
 
-A set of compose files to run Splunk using Docker Swarm.
+A set of Docker Compose files to run Splunk using Docker Swarm.
 
 ## Usage
 
