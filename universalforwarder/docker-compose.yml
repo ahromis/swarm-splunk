@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+      vsplunk-uf:
+       image: busybox
+       volumes:
+        - splunkuf-etc:/opt/splunk/etc
+        - splunkuf-var:/opt/splunk/var
+       networks:
+        - splunk_default
+       deploy:
+        mode: global
+        update_config:
+          parallelism: 2
+          delay: 10s
+        restart_policy:
+          condition: on-failure
+      splunk-forwarder:
+       image: splunk/universalforwarder:6.5.3-monitor
+       environment:
+        SPLUNK_START_ARGS: --accept-license --answer-yes
+        SPLUNK_FORWARD_SERVER: splunk:9997
+        SPLUNK_ADD: monitor /var/log/docker
+        SPLUNK_USER: root
+       volumes:
+        - splunkuf-etc:/opt/splunk/etc
+        - splunkuf-var:/opt/splunk/var
+        - /var/lib/docker/containers:/host/containers
+        - /var/run/docker.sock:/var/run/docker.sock
+       networks:
+        - splunk_default
+       deploy:
+        mode: global
+        update_config:
+          parallelism: 2
+          delay: 15s
+        restart_policy:
+          condition: on-failure
+
+volumes:
+  splunkuf-etc:
+    driver: local
+  splunkuf-var:
+    driver: local
+
+networks:
+  splunk_default:
+    external: true

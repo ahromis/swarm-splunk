@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+     vsplunk:
+       image: busybox:latest
+       volumes:
+        - splunk-etc:/opt/splunk/etc
+        - splunk-var:/opt/splunk/var
+       deploy:
+         mode: replicated
+         update_config:
+           parallelism: 1
+           delay: 10s
+         restart_policy:
+           condition: on-failure
+         replicas: 1
+         placement:
+           constraints:
+             - node.hostname==${SPLUNK_NODE}
+     splunk:
+       image: splunk/splunk:6.5.3-monitor
+       environment:
+         SPLUNK_START_ARGS: --accept-license --answer-yes
+         SPLUNK_ENABLE_LISTEN: 9997
+         SPLUNK_ADD: tcp 1514
+         SPLUNK_USER: root
+       deploy:
+         mode: replicated
+         update_config:
+           parallelism: 1
+           delay: 10s
+         restart_policy:
+           condition: on-failure
+         replicas: 1
+         placement:
+           constraints:
+             - node.hostname==${SPLUNK_NODE}
+       ports:
+         - "8000:8000"
+         - "9997:9997"
+         - "8088:8088"
+         - "1514:1514"
+       volumes:
+         - /var/lib/docker/containers:/host/containers
+         - /var/run/docker.sock:/var/run/docker.sock
+         - splunk-etc:/opt/splunk/etc
+         - splunk-var:/opt/splunk/var
+
+volumes:
+  splunk-etc:
+    driver: local
+  splunk-var:
+    driver: local
+networks:
+  splunk:
+    driver: overlay
