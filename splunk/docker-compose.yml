@@ -54,3 +54,5 @@ volumes:
 networks:
   splunk:
     driver: overlay
+    driver_opts:
+      encrypted: "true"
